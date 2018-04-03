@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Weakly Supervised Instance Segmentation using Class Peak Response</title>
+    <!-- Cache control -->
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <!-- Responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=false">
+    <!-- Full screen under IOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <!-- Page style -->
+    <style type="text/css">
+      body {
+        margin: 0;
+        padding: 0;
+        font-size: 16px;
+        line-height: 1.5;
+        color: #606c71;
+        box-sizing: border-box;
+        font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+      .project-background {
+        position: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+        color: #fff;
+        text-align: center;
+        background-color: #991527;
+        background-image: linear-gradient(120deg, #159999, #991527);
+      }
+      .project-cover {
+        position: relative;
+        width: 100%;
+      }
+      h1 {
+        font-size: 2.9rem;
+        font-weight: bold;
+        margin: 0;
+      }
+      h2 {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.55rem;
+        font-weight: normal;
+        margin-top: 20px;
+        margin-bottom: 40px;
+      }
+      h3 {
+
+      }
+      a {
+        color: #1e6bb8;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .btn {
+        display: inline-block;
+        color: rgba(255, 255, 255, 0.7);
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 0.3rem;
+        transition: color 0.2s, background-color 0.2s, border-color0.2s;
+      }
+      .btn:hover {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+      .btn + .btn {
+        margin-left: 1rem;
+      }
+      .inverse {
+        color: rgba(30, 30, 30, 0.7);
+        background-color: rgba(30, 30, 30, 0.02);
+        border-color: rgba(30, 30, 30, 0.2);
+      }
+      .inverse:hover {
+        color: rgba(30, 30, 30, 0.8);
+        background-color: rgba(30, 30, 30, 0.1);
+        border-color: rgba(30, 30, 30, 0.3);
+      }
+      #modal-overlay {
+        visibility: hidden;
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        z-index: 1000;
+        background-color: rgba(30, 30, 30, 0.8);
+      }
+      .modal-data {
+        position: relative;
+        width: 430px;
+        background-color: #fff;
+        border-radius: 15px;
+        padding: 15px;
+        text-align: justify;
+      }
+      .modal-data div {
+        text-align: center;
+      }
+      .modal-data p {
+        margin: 1.5rem 0;
+      }
+      .web-link {
+        color: #159957;
+        font-weight: 600;
+      }
+      .authors {
+        font-size: 1.35rem;
+        margin: 8px 0;
+        color: rgba(255, 255, 255, 0.65);
+      }
+      .text-animation {
+        display: none;
+        position: relative;
+        left: 0;
+        right: 0;
+        margin: auto;
+        width: 1000px;
+        font-weight: 600;
+        overflow: hidden;
+        height: 50px;
+        margin-top: 20px;
+        margin-bottom: 40px;
+      }
+      .text-animation:before {
+        content: '[';
+        left: 0;
+        line-height: 40px;
+      }
+      .text-animation:after {
+        content: ']';
+        position: absolute;
+        right: 0;
+        line-height: 40px;
+      }
+      .text-animation:after, .text-animation:before {
+        position: absolute;
+        top: 0;
+        color: #16a085;
+        font-size: 42px;
+        -webkit-animation-name: opacity;
+        -webkit-animation-duration: 3s;
+        -webkit-animation-iteration-count: infinite;
+        animation-name: opacity;
+        animation-duration: 3s;
+        animation-iteration-count: infinite;
+      }
+      ul {
+        cursor: text;
+        margin: 0;
+        padding: 0;
+        text-align:center;
+        list-style:none;
+        -webkit-animation-name: change;
+        -webkit-animation-duration: 30s;
+        -webkit-animation-iteration-count: infinite;
+        animation-name: change;
+        animation-duration: 30s;
+        animation-iteration-count: infinite;
+      }
+      ul:hover {
+        -webkit-animation-play-state: paused;
+        -moz-animation-play-state: paused;
+        -o-animation-play-state: paused;
+      }
+      ul li {
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: normal;
+        font-size: 25px;
+        line-height: 50px;
+        margin: 0;
+      }
+      @-webkit-keyframes opacity {
+        0%, 100% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      @-webkit-keyframes change {
+        0%, 12%, 100% {transform:translateY(0);}
+        17%,29% {transform:translateY(-25%);}
+        34%,46% {transform:translateY(-50%);}
+        51%,63% {transform:translateY(-75%);}
+        68%,80% {transform:translateY(-50%);}
+        85%,97% {transform:translateY(-25%);}
+      }
+      @keyframes opacity {
+        0%, 100% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      @keyframes change {
+        0%, 12%, 100% {transform:translateY(0);}
+        17%,29% {transform:translateY(-25%);}
+        34%,46% {transform:translateY(-50%);}
+        51%,63% {transform:translateY(-75%);}
+        68%,80% {transform:translateY(-50%);}
+        85%,97% {transform:translateY(-25%);}
+      }
+      /* big screen */
+      @media screen and (min-width: 1024px) {
+        .text-animation {
+          display: inherit;
+        }
+        .text-static {
+          display: none;
+        }
+      }
+      /* screen */
+      @media screen and (min-width: 64em) {
+        .btn {
+          padding: 0.75rem 1rem;
+        }
+      }
+      /* tablet */
+      @media screen and (min-width: 42em) and (max-width: 64em) {
+        h1 {
+          font-size: 2.8rem;
+        }
+        h2 {
+          font-size: 1.2rem;
+        }
+        .btn {
+          padding: 0.6rem 0.9rem;
+          font-size: 0.9rem;
+        }
+      }
+      /* phone */
+      @media screen and (max-width: 42em) {
+        h1 {
+          font-size: 2.4rem;
+        }
+        h2 {
+          font-size: 1.2rem;
+        }
+        .btn {
+          display: block;
+          padding: 0.75rem;
+          font-size: 1rem;
+        }
+        .btn + .btn {
+          margin-top: 1rem;
+          margin-left: 0;
+        }
+      }
+    </style>
+    <!-- Web font -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <div class="project-background">
+      <div class="project-cover">
+        <h1>Weakly Supervised Instance Segmentation using Class Peak Response</h1>
+          <h2 class="authors">Yanzhao Zhou, Yi Zhu, Qixiang Ye, Qiang Qiu, and Jianbin Jiao</h2>
+          <div class='text-animation'>
+            <ul>
+              <li>PRM extracts fine-detailed instance-aware visual cues from class peak responses</li>
+              <li>PRM enables classification networks for instance mask extraction</li>
+              <li>PRM is naturally compatible with modern architectures (VGG/ResNet etc.)</li>
+              <li>PRM introduces negligible training overhead</li>
+            </ul>
+          </div>
+          <h2 class="text-static">PRM extracts fine-detailed instance-aware visual cues from class peak responses</h2>
+        <a target="_blank" href="javascript:showModal()" class="btn">Source code and Demo</a>
+        <a target="_blank" href="javascript:showModal()" class="btn">Paper (arXiv)</a>
+        <a target="_blank" href="javascript:showModal()" class="btn">Supplementary materials</a>
+      </div>
+    </div>
+    <div id="modal-overlay">
+      <div class="modal-data">
+        <p>
+          <h3>Thank you for your interest in our work!</h3>
+          Our paper has been accepted by <a target="_blank" href="http://cvpr2018.thecvf.com" class="web-link">CVPR 2018</a> (Spotlight). 
+          <br>
+          The code and demo will be release as soon as possible.
+          You can get instant email notification once we update by <a target="_blank" href="https://github.com/ZhouYanzhao/PRM/subscription" class="web-link">subscribing the repository</a>.
+        </p>
+        <div><a class="btn inverse" href="javascript:overlay()">Got it</a></div>
+      </div>
+    </div>
+  <script>
+    function overlay() {
+    var el = document.getElementById('modal-overlay');
+      el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible";
+    }
+    function showModal() {
+      var el = document.getElementById('modal-overlay');
+      el.style.visibility = "visible";
+    }
+  </script>
+  </body>
+</html>
