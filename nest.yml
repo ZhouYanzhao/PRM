@@ -1,0 +1,12 @@
+author: Zhou, Yanzhao
+version: 1.0.0
+backend: pytorch
+url: https://github.com/ZhouYanzhao/PRM
+module_path: './install'
+requirements:
+  - torch>=0.4.0
+  - torchvision>=0.2.1
+  - numpy>=1.14.3
+  - scipy>=1.0.1
+  - matplotlib
+  - {url: opencv, tool: conda}

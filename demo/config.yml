@@ -1,0 +1,61 @@
+_name: network_trainer
+data_loaders:
+  _name: fetch_data
+  dataset: 
+    _name: pascal_voc_classification
+    data_dir: ./datasets/VOCdevkit
+    year: 2012
+  batch_size: 16
+  num_workers: 4
+  transform:
+    _name: image_transform
+    image_size: [448, 448]
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+  train_augmentation:
+    horizontal_flip: 0.5
+  train_splits:
+    - trainval
+model:
+  _name: peak_response_mapping
+  backbone:
+    _name: fc_resnet50
+  win_size: 3
+  sub_pixel_locating_factor: 8
+  enable_peak_stimulation: true
+criterion:
+  _name: multilabel_soft_margin_loss
+  difficult_samples: yes
+optimizer:
+  _name: sgd_optimizer
+  lr: 0.01
+  momentum: 0.9
+  weight_decay: 1.0e-4
+parameter:
+  _name: finetune
+  base_lr: 0.01
+  groups:
+    'features': 0.01
+meters:
+  loss:
+    _name: loss_meter
+max_epoch: 20
+device: cuda
+hooks:
+  on_start:
+    -
+      _name: print_state
+      formats:
+        - '@CONFIG'
+        - 'Model: {model}'
+      join_str: '\n'
+  on_end_epoch: 
+    - 
+      _name: print_state
+      formats:
+        - 'epoch: {epoch_idx}'
+        - 'classification_loss: {metrics[trainval_loss]:.4f}'
+    -
+      _name: checkpoint
+      save_dir: './snapshots'
+      save_latest: yes
