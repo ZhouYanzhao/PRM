@@ -1,7 +1,10 @@
-<h2 align="center">Weakly Supervised Instance Segmentation using<br>Class Response Peaks</h2>
+<h2 align="center">Weakly Supervised Instance Segmentation using<br>Class Peak Response</h2>
 
 [![](https://img.shields.io/badge/pytorch-1.0-red.svg)](https://github.com/ZhouYanzhao/PRM/tree/pytorch)
 [![](https://img.shields.io/badge/mxnet-scheduled-green.svg)](#)
+
+[[Home]](http://yzhou.work) [[Project]](http://yzhou.work/PRM) [[Paper]](https://arxiv.org/pdf/1804.00880) [[Supp]](http://yzhou.work/PRM/Supplementary.pdf) [[Poster]](http://yzhou.work/PRM/Poster.pdf) [[Presentation]](https://www.youtube.com/embed/lNqXyJliVSo?start=4615&end=4850&autoplay=1&controls=0)
+
 ![Illustration](illustration.png)
 
 ## PyTorch Implementation
